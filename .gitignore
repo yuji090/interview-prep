@@ -1,0 +1,66 @@
+# ----------------------------
+# Java / Spring Boot Defaults
+# ----------------------------
+
+target/
+*.jar
+*.war
+*.class
+*.log
+
+# Ignore test reports and local database files
+*.db
+*.sqlite
+*.h2.db
+
+# ----------------------------
+# Sensitive Files
+# ----------------------------
+application.properties
+application.yml
+.env
+
+# ----------------------------
+# Maven Wrapper
+# ----------------------------
+.mvn/
+!**/src/main/**/target/
+!**/src/test/**/target/
+mvnw
+mvnw.cmd
+
+# ----------------------------
+# STS (Spring Tool Suite)
+# ----------------------------
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# ----------------------------
+# IntelliJ IDEA
+# ----------------------------
+.idea
+*.iws
+*.iml
+*.ipr
+
+# ----------------------------
+# NetBeans
+# ----------------------------
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ----------------------------
+# VS Code
+# ----------------------------
+.vscode/
