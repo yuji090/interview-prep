@@ -38,9 +38,8 @@ public class QuestionService {
         return toResponseDTO(saved);
     }
 
-    public List<QuestionResponseDTO> getUserQuestions(String email) {
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public List<QuestionResponseDTO> getUserQuestions() {
+        User user = userUtil.getCurrentUser(); // ✅ Logged-in user from JWT
 
         return questionRepo.findByUser(user)
                 .stream()
@@ -48,19 +47,30 @@ public class QuestionService {
                 .collect(Collectors.toList());
     }
 
+
     public void deleteQuestion(Long id) {
-        questionRepo.deleteById(id);
+        Question question = questionRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        // ✅ Authorization check
+        if (!question.getUser().getId().equals(userUtil.getCurrentUser().getId())) {
+            throw new RuntimeException("Unauthorized to delete this question");
+        }
+
+        questionRepo.delete(question);
     }
 
     public List<QuestionResponseDTO> filterByTopic(String topic) {
-        return questionRepo.findByTopic(topic)
+        User user = userUtil.getCurrentUser();
+        return questionRepo.findByUserAndTopic(user, topic)
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public List<QuestionResponseDTO> filterBySolved(boolean isSolved) {
-        return questionRepo.findByIsSolved(isSolved)
+        User user = userUtil.getCurrentUser();
+        return questionRepo.findByUserAndIsSolved(user, isSolved)
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -82,6 +92,11 @@ public class QuestionService {
     public QuestionResponseDTO updateQuestion(Long id, QuestionRequestDTO dto) {
         Question question = questionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        // ✅ Authorization check
+        if (!question.getUser().getId().equals(userUtil.getCurrentUser().getId())) {
+            throw new RuntimeException("Unauthorized to update this question");
+        }
 
         // Only update fields from DTO
         question.setTitle(dto.getTitle());
