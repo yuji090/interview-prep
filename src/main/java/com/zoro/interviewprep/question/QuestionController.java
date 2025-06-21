@@ -22,9 +22,10 @@ public class QuestionController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<QuestionResponseDTO>> getUserQuestions(@RequestParam String email) {
-        return ResponseEntity.ok(questionService.getUserQuestions(email));
+    public ResponseEntity<List<QuestionResponseDTO>> getUserQuestions() {
+        return ResponseEntity.ok(questionService.getUserQuestions());
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
