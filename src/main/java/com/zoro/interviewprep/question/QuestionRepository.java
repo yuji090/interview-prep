@@ -8,8 +8,6 @@ import java.util.List;
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     List<Question> findByUser(User user);
-    List<Question> findByTopic(String topic);
-    List<Question> findByIsSolved(boolean isSolved);
     List<Question> findByUserAndTopic(User user, String topic);
     List<Question> findByUserAndIsSolved(User user, boolean isSolved);
 
