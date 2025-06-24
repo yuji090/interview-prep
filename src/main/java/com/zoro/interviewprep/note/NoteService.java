@@ -10,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,67 +18,47 @@ public class NoteService {
 
     private final NoteRepository noteRepo;
     private final QuestionRepository questionRepo;
-    private final UserUtil userUtil; // ✅ Injecting for current user check
+    private final UserUtil userUtil;
 
-    public NoteResponseDTO addNote(NoteRequestDTO dto) {
+    public NoteResponseDTO addOrUpdateNote(NoteRequestDTO dto) {
+        User currentUser = userUtil.getCurrentUser();
         Question question = questionRepo.findById(dto.getQuestionId())
                 .orElseThrow(() -> new RuntimeException("Question not found"));
 
-        // 🔒 Optional: check if current user owns this question
-        if (!question.getUser().getId().equals(userUtil.getCurrentUser().getId())) {
-            throw new AccessDeniedException("You are not authorized to add a note to this question");
+        // 🔐 Authorization: only question owner can add/update note
+        if (!question.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not authorized to add or update note for this question");
         }
 
-        Note note = Note.builder()
-                .content(dto.getContent())
-                .question(question)
-                .build();
+        Optional<Note> existingNoteOpt = noteRepo.findByQuestion(question);
 
-        Note savedNote = noteRepo.save(note);
-        return toResponseDTO(savedNote);
+        if (existingNoteOpt.isPresent()) {
+            Note note = existingNoteOpt.get();
+            note.setContent(dto.getContent().trim());
+            return toResponseDTO(noteRepo.save(note));
+        } else {
+            Note note = Note.builder()
+                    .content(dto.getContent().trim())
+                    .question(question)
+                    .build();
+            return toResponseDTO(noteRepo.save(note));
+        }
     }
 
-    public List<NoteResponseDTO> getNotesForQuestion(Long questionId) {
+    public NoteResponseDTO getNoteForQuestion(Long questionId) {
         Question question = questionRepo.findById(questionId)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
 
-        // ✅ Check if the logged-in user is the owner of the question
         User currentUser = userUtil.getCurrentUser();
         if (!question.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You are not authorized to view notes for this question");
+            throw new AccessDeniedException("Unauthorized");
         }
 
-        return question.getNotes().stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+        return question.getNotes().isEmpty()
+                ? null
+                : toResponseDTO(question.getNotes().get(0)); // or use Optional
     }
 
-    public NoteResponseDTO updateNote(Long noteId, NoteRequestDTO dto) {
-        Note note = noteRepo.findById(noteId)
-                .orElseThrow(() -> new RuntimeException("Note not found"));
-
-        // ✅ Prevent update if user doesn't own the question
-        if (!note.getQuestion().getUser().getId().equals(userUtil.getCurrentUser().getId())) {
-            throw new AccessDeniedException("You are not authorized to update this note");
-        }
-
-        note.setContent(dto.getContent());
-        Note updated = noteRepo.save(note);
-
-        return toResponseDTO(updated);
-    }
-
-    public void deleteNote(Long noteId) {
-        Note note = noteRepo.findById(noteId)
-                .orElseThrow(() -> new RuntimeException("Note not found"));
-
-        // ✅ Prevent delete if user doesn't own the question
-        if (!note.getQuestion().getUser().getId().equals(userUtil.getCurrentUser().getId())) {
-            throw new AccessDeniedException("You are not authorized to delete this note");
-        }
-
-        noteRepo.delete(note);
-    }
 
     private NoteResponseDTO toResponseDTO(Note note) {
         return NoteResponseDTO.builder()

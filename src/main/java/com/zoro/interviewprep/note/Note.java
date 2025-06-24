@@ -16,10 +16,11 @@ public class Note {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "question_id")
+    @OneToOne
+    @JoinColumn(name = "question_id", referencedColumnName = "id")
     @JsonBackReference
     private Question question;
 

@@ -110,6 +110,16 @@ public class QuestionService {
     }
 
 
+    public List<QuestionResponseDTO> filterByParams(String topic, String difficulty, Boolean isSolved) {
+        User user = userUtil.getCurrentUser();
+        List<Question> filtered = questionRepo.filterByParams(user, topic, difficulty, isSolved);
+        return filtered.stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+
+
     // ✅ SRP: Each method does one task
     // ✅ OCP: New logic (like note support) can be added without changing existing methods
     // ✅ DIP: Depends on UserUtil abstraction to fetch user, not raw email input

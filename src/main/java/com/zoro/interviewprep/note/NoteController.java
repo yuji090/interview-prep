@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/notes")
 @RequiredArgsConstructor
@@ -17,27 +15,15 @@ public class NoteController {
     private final NoteService noteService;
 
     @PostMapping("/add")
-    public ResponseEntity<NoteResponseDTO> addNote(@Valid @RequestBody NoteRequestDTO dto) {
-        return ResponseEntity.ok(noteService.addNote(dto));
+    public ResponseEntity<NoteResponseDTO> addOrUpdateNote(@Valid @RequestBody NoteRequestDTO dto) {
+        return ResponseEntity.ok(noteService.addOrUpdateNote(dto));
     }
 
     @GetMapping("/question/{questionId}")
-    public ResponseEntity<List<NoteResponseDTO>> getNotes(@PathVariable Long questionId) {
-        return ResponseEntity.ok(noteService.getNotesForQuestion(questionId));
+    public ResponseEntity<NoteResponseDTO> getNote(@PathVariable Long questionId) {
+        return ResponseEntity.ok(noteService.getNoteForQuestion(questionId));
     }
 
-    @PutMapping("/update/{noteId}")
-    public ResponseEntity<NoteResponseDTO> updateNote(
-            @PathVariable Long noteId,
-            @Valid @RequestBody NoteRequestDTO dto) {
-        return ResponseEntity.ok(noteService.updateNote(noteId, dto));
-    }
 
-    @DeleteMapping("/delete/{noteId}")
-    public ResponseEntity<Void> deleteNote(@PathVariable Long noteId) {
-        noteService.deleteNote(noteId);
-        return ResponseEntity.noContent().build();
-    }
-
-    // ✅ Clean: Uses DTOs for both input and output
+    //Removed DELETE and PUT — not needed in one-note-per-question logic
 }

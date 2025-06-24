@@ -43,6 +43,16 @@ public class QuestionController {
         return ResponseEntity.ok(questionService.filterBySolved(solved));
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<List<QuestionResponseDTO>> filterAll(
+            @RequestParam(required = false) String topic,
+            @RequestParam(required = false) String difficulty,
+            @RequestParam(required = false) Boolean solved
+    ) {
+        return ResponseEntity.ok(questionService.filterByParams(topic, difficulty, solved));
+    }
+
+
     @PutMapping("/update/{id}")
     public ResponseEntity<QuestionResponseDTO> update(
             @PathVariable Long id,
