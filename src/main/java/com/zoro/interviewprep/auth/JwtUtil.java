@@ -32,5 +32,18 @@ public class JwtUtil {
         return extractUsername(token).equals(user.getEmail());
     }
 
-    // ✅ SRP: Utility class for only JWT-related logic
+    // ✅ Add this for WebSocket use
+    public String getUsernameFromToken(String token) {
+        return extractUsername(token);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("❌ Invalid JWT: " + e.getMessage());
+            return false;
+        }
+    }
 }
