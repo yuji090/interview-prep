@@ -21,6 +21,7 @@ public class ChatMessage {
     private User sender;
 
     @Setter
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @Setter
